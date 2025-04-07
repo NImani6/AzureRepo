@@ -1,0 +1,31 @@
+pool:
+  name: Lab4p2  # or your custom agent pool name
+  demands:
+    - agent.name -equals LEONARDO
+
+trigger:
+  - main  # or your default branch
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'Build project'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
